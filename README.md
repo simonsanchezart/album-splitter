@@ -22,7 +22,7 @@
 
 ## Usage
 
-```cmd
+```
 usage: album-splitter.py [-h] [-d | --delete | --no-delete]
 
 Splits .mp3s based on timestamps if a .txt with the same name of the .mp3
