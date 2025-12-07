@@ -1,3 +1,4 @@
+import concurrent.futures
 import re
 import argparse
 import colorama
@@ -22,7 +23,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 colorama.init(autoreset=True)
-TIMESTAMP_RE = r"((?:\d{2}:)+(?:\d{2}){1})"
+TIMESTAMP_RE = r"((?:\d+:)+(?:\d{2}){1})"
 Song = namedtuple("Song", ["title", "timestamp"])
 
 
@@ -45,11 +46,15 @@ if not all_mp3s or not all_txts:
 
 albums = {}
 for mp3 in all_mp3s:
-    matching_txt = next(
-        (f for f in all_txts if Path(f).stem == Path(mp3).stem), None
-    )
+    matching_txt = next((f for f in all_txts if Path(f).stem == Path(mp3).stem), None)
     if matching_txt:
         albums[mp3] = matching_txt
+
+
+def export_song(song):
+    print(f"\t{colorama.Fore.LIGHTCYAN_EX}Saving song '{song[0]}'\n")
+    song[2].export(song[1], format="mp3")
+
 
 for album_mp3, txt in albums.items():
     print(f"{colorama.Fore.GREEN}Processing {album_mp3}")
@@ -81,22 +86,22 @@ for album_mp3, txt in albums.items():
     album_dir = os.path.abspath(Path(album_mp3).stem)
     os.makedirs(album_dir, exist_ok=True)
 
+    song_time_table = []
+
     for i, song in enumerate(songs):
         song_data = None
-        song_save_path = os.path.join(album_dir, f"{song.title}.mp3")
+        song_save_path = os.path.join(album_dir, f"{i+1}- {song.title}.mp3")
         next_song = songs[i + 1] if i + 1 < len(songs) else None
 
         song_at = get_duration_in_ms(song.timestamp)
         if next_song:
             next_song_at = get_duration_in_ms(next_song.timestamp)
-            song_data = album_data[song_at:next_song_at]
+            song_time_table.append((song.title, song_save_path, album_data[song_at:next_song_at]))
         else:
-            song_data = album_data[song_at:]
+            song_time_table.append((song.title, song_save_path, album_data[song_at:]))
 
-        print(
-            f"\t{colorama.Fore.LIGHTCYAN_EX}Saving song '{song.title}'{colorama.Fore.GREEN} ({i+1}/{len(songs)})"
-        )
-        song_data.export(song_save_path, format="mp3")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(export_song, song_time_table)
 
     if args.delete:
         print(f"\t{colorama.Fore.RED}Removing {album_mp3}")
