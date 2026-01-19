@@ -1,4 +1,4 @@
-# Album Splitter
+# ✂️ Album Splitter
 
 <p align="center">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="Made with Love" />
