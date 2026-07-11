@@ -78,7 +78,7 @@ for album_mp3, txt in albums.items():
 
             songs.append(Song(song_title, song_timestamp))
             print(
-                f"\t{colorama.Fore.LIGHTGREEN_EX}Found song '{song_title}' with timestamp {":".join(song_timestamp)}"
+                f"\t{colorama.Fore.LIGHTGREEN_EX}Found song '{song_title}' with timestamp {':'.join(song_timestamp)}"
             )
 
     print(f"\t{colorama.Fore.CYAN}Loading mp3 file")
